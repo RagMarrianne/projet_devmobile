@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "118548187539",
+    "project_id": "devmobile-9cf53",
+    "storage_bucket": "devmobile-9cf53.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:118548187539:android:3d82e3e4f3ed4cca928066",
+        "android_client_info": {
+          "package_name": "com.example.projet_devmobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZJGruZD6LiSR1PEapF0-h4YoZa2Bt_4M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
