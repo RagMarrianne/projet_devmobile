@@ -27,7 +27,7 @@ public class FormLayout extends LinearLayout {
     private Map<String,EditText> editsViews = new HashMap<>();
     private Map<String, Button> buttonsViews = new HashMap<>();
     private Map<String, TextView> filesPathsViews = new HashMap<>();
-    private Map<String, Class<?>> typeData;
+    private Map<String, Class<?>> typeData = new HashMap<>();
     private final GradientDrawable gradientDrawable = new GradientDrawable();
 
 
@@ -77,8 +77,8 @@ public class FormLayout extends LinearLayout {
         this.addView(editView);
     }
     public void addTextSection(Map<String, Class<?>> sections){
-        typeData.putAll(sections);
         for (Map.Entry<String, Class<?>> entry : sections.entrySet()) {
+            typeData.put(entry.getKey(),entry.getValue());
             addTextSection(entry.getKey());
         }
     }
