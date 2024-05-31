@@ -1,33 +1,28 @@
-package com.example.projet_devmobile.fragment.general;
+package com.example.projet_devmobile.fragment.commun;
 
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 
 import com.example.projet_devmobile.R;
-import com.example.projet_devmobile.activity.EmployeurActivity;
 import com.example.projet_devmobile.activity.ReceptionActivity;
+import com.example.projet_devmobile.classesUtilitaires.Candidature;
+import com.example.projet_devmobile.fragment.candidat.CandidatMenuFragment;
+import com.example.projet_devmobile.fragment.candidat.ListeCandidatureCFragment;
 import com.example.projet_devmobile.fragment.employeur.EmployeurMenuFragment;
 import com.example.projet_devmobile.layouts_utilitaires.ButtonSetLayout;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
+/**This fragment is used to create the side menu**/
 public class ProfilSettingFragment extends Fragment {
     private static final String TYPE_CASE = "type utilisateur";
     private static final String IDENTIFIANT = "identifiant";
@@ -43,6 +38,7 @@ public class ProfilSettingFragment extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
+
     public static ProfilSettingFragment newInstance(int typeCase, String identifiant) {
         ProfilSettingFragment fragment = new ProfilSettingFragment();
         Bundle args = new Bundle();
@@ -90,15 +86,13 @@ public class ProfilSettingFragment extends Fragment {
 
     private void menuAnonyme(){
         addSignIn();
+        addLogOut();
     }
     private void menuCandidat(){
-        /*Map<String,Object> options = new HashMap<>();
-        //options.put("Candidatures en cours", new ListeCandidaturesCFragment());
-        //options.put("Candidatures traitées", new ListeCandidaturesTFragment());
-        //options.put("Back to main menu", CandidatActivity.class);
-        options.put("Log Out", ReceptionActivity.class);
-
-        addOptions(options);*/
+        addShowCandidature(Candidature.EN_COURS);
+        addShowCandidature(Candidature.TRAITEE);
+        addBackToMainMenu();
+        addLogOut();
 
     }
     private void menuEmployeur(){
@@ -106,13 +100,27 @@ public class ProfilSettingFragment extends Fragment {
         addLogOut();
     }
 
+    private void addShowCandidature(String state){
+        Button button = initButton("Afficher les candidatures ("+state+")");
+        button.setOnClickListener(v -> {
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .remove(this)
+                    .replace(R.id.menuContent, ListeCandidatureCFragment.newInstance(state))
+                    .commit();
+        });
+        menuContentLayout.addView(button);
+    }
+
     private void addBackToMainMenu(){
         Button button = initButton("Revenir au menu principal");
         button.setOnClickListener(onClickListener -> {
-            requireActivity().getSupportFragmentManager().beginTransaction()
-                    .remove(this).commit();
             requireActivity().getSupportFragmentManager()
-                    .popBackStack("main menu", FragmentManager.POP_BACK_STACK_INCLUSIVE);});
+                    .beginTransaction()
+                    .remove(this)
+                    .replace(R.id.menuContent,menuFragment(requireArguments().getInt(TYPE_CASE)))
+                    .commit();
+            }
+        );
         menuContentLayout.addView(button);
     }
 
@@ -130,14 +138,14 @@ public class ProfilSettingFragment extends Fragment {
         candidat.setOnClickListener(onClickListener -> requireActivity().getSupportFragmentManager()
                 .beginTransaction()
                 .remove(this)
-                .replace(R.id.mainLayout,SignInFragment.newInstance(SignInFragment.CANDIDAT))
+                .replace(R.id.menuContent,SignInFragment.newInstance(SignInFragment.CANDIDATE,true))
                 .commit());
         menuContentLayout.addView(candidat);
         Button employeur = initButton("S'inscrire comme employeur");
         employeur.setOnClickListener(onClickListener -> requireActivity().getSupportFragmentManager()
                 .beginTransaction()
                 .remove(this)
-                .replace(R.id.mainLayout,SignInFragment.newInstance(SignInFragment.EMPLOYEUR))
+                .replace(R.id.menuContent,SignInFragment.newInstance(SignInFragment.EMPLOYER,true))
                 .commit());
         menuContentLayout.addView(employeur);
     }
@@ -161,6 +169,23 @@ public class ProfilSettingFragment extends Fragment {
         button.setText(text);
 
         return button;
+    }
+
+    private Fragment menuFragment(int type_case){
+        Fragment fragment = null;
+        switch (type_case){
+            case ANONYME:
+                fragment = new CandidatMenuFragment();
+                break;
+            case CANDIDAT:
+                fragment = new CandidatMenuFragment();
+                break;
+            case EMPLOYEUR:
+                fragment = new EmployeurMenuFragment();
+                break;
+            default: break;
+        }
+        return fragment;
     }
 
 }

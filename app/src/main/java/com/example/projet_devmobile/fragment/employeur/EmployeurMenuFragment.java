@@ -6,6 +6,7 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -16,43 +17,38 @@ import android.widget.LinearLayout;
 
 import com.example.projet_devmobile.R;
 import com.example.projet_devmobile.classesUtilitaires.Candidature;
+import com.example.projet_devmobile.classesUtilitaires.viewModelClass.UserDataViewModel;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 
 public class EmployeurMenuFragment extends Fragment {
     private LinearLayout menuLayout;
-    private static final String IDENTIFIANT = "identifiant";
-
-    public static EmployeurMenuFragment newInstance(String identifiant) {
-
-        Bundle args = new Bundle();
-        args.putString(IDENTIFIANT,identifiant);
-        EmployeurMenuFragment fragment = new EmployeurMenuFragment();
-        fragment.setArguments(args);
-        return fragment;
-    }
+    private UserDataViewModel userDataViewModel;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_employeur_menu, container, false);
+        return inflater.inflate(R.layout.fragment_user_menu, container, false);
     }
 
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        menuLayout = view.findViewById(R.id.employeurmenucontent);
+        userDataViewModel = new ViewModelProvider(this.getActivity()).get(UserDataViewModel.class);
+
+        menuLayout = view.findViewById(R.id.usermenucontent);
         initMenuLayout();
 
     }
 
     private void initMenuLayout(){
-        Map<String, Fragment> options = new HashMap<>();
-        options.put("Déposer une offre", NouvelleOffreFragment.newInstance(getArguments().getString(IDENTIFIANT)));
-        options.put("Consulter les offres",ListeOffresFragment.newInstance(getArguments().getString(IDENTIFIANT)));
-        options.put("Gérer les candidatures en cours",ListeCandidatureFragment.newInstance(Candidature.EN_COURS, getArguments().getString(IDENTIFIANT)));
-        options.put("Gérer les candidatures acceptées",ListeCandidatureFragment.newInstance(Candidature.ACCEPTE, getArguments().getString(IDENTIFIANT)));
+        Map<String, Fragment> options = new LinkedHashMap<>();
+        options.put("Déposer une offre", NouvelleOffreFragment.newInstance(userDataViewModel.getUserId().getValue()));
+        options.put("Consulter les offres",ListeOffresFragment.newInstance(userDataViewModel.getUserId().getValue()));
+        options.put("Gérer les candidatures en cours", ListeCandidatureEFragment.newInstance(Candidature.EN_COURS, userDataViewModel.getUserId().getValue()));
+        options.put("Gérer les candidatures traitées", ListeCandidatureEFragment.newInstance(Candidature.TRAITEE, userDataViewModel.getUserId().getValue()));
         addOptions(options, menuLayout);
 
     }

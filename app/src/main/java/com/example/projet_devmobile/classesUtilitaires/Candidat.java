@@ -5,13 +5,14 @@ public class Candidat {
     private String prenom;
     private String email;
     private String motdepasse;
-    private double age;
+    private Integer age;
     private String ville;
     private String nationalite;
-    private String cv; // le chemin local vers le cv ou l'url de telechargement du cv
+    private Integer numero;
+    private String cv;
 
     public Candidat(){};
-    public Candidat(String nom, String prenom, String email, String motdepasse, double age, String ville, String nationalite, String cv) {
+    public Candidat(String nom, String prenom, String email, Integer numero, String motdepasse, Integer age, String ville, String nationalite, String cv) {
         this.nom = nom;
         this.prenom = prenom;
         this.email = email;
@@ -20,6 +21,7 @@ public class Candidat {
         this.ville = ville;
         this.nationalite = nationalite;
         this.cv = cv;
+        this.numero = numero;
     }
 
     public String getNom() {
@@ -38,7 +40,7 @@ public class Candidat {
         return motdepasse;
     }
 
-    public double getAge() {
+    public Integer getAge() {
         return age;
     }
 
@@ -53,4 +55,9 @@ public class Candidat {
     public String getCv() {
         return cv;
     }
+
+    public Integer getNumero() {
+        return numero;
+    }
+
 }

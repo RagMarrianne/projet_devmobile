@@ -11,17 +11,18 @@ import android.widget.TextView;
 
 import androidx.fragment.app.FragmentActivity;
 
-import com.example.projet_devmobile.fragment.general.PDFViewerFragment;
+import com.example.projet_devmobile.fragment.commun.PDFViewerFragment;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class EntitieLayout extends LinearLayout {
+public class EntityLayout extends LinearLayout {
     private final GradientDrawable gradientDrawable = new GradientDrawable();
 
-    public EntitieLayout(Context context) {
+    /**This class is used to show candidature or offer**/
+    public EntityLayout(Context context) {
         super(context);
         GradientDrawable mainLayoutgradientDrawable = new GradientDrawable();
         mainLayoutgradientDrawable.setShape(GradientDrawable.RECTANGLE);
@@ -48,6 +49,8 @@ public class EntitieLayout extends LinearLayout {
 
         TextView sectionView = new TextView(this.getContext());
         sectionView.setLayoutParams(labelLayoutParam);
+        sectionView.setTextColor(Color.BLACK);
+        sectionView.setTextSize(20);
         sectionView.setPadding(10,10,10,10);
         sectionView.setId(View.generateViewId());
         sectionView.setText(label+" : "+value);
@@ -76,11 +79,17 @@ public class EntitieLayout extends LinearLayout {
                 LayoutParams.WRAP_CONTENT);
         buttonLayoutParam.setMargins(30,20,30,20);
 
+        GradientDrawable buttonLayoutDrawable = new GradientDrawable();
+        buttonLayoutDrawable.setShape(GradientDrawable.RECTANGLE);
+        buttonLayoutDrawable.setCornerRadius(70);
+        buttonLayoutDrawable.setColor(Color.WHITE);
+
         Button showDocButton = new Button(this.getContext());
+        showDocButton.setBackground(buttonLayoutDrawable);
         showDocButton.setLayoutParams(buttonLayoutParam);
         showDocButton.setId(View.generateViewId());
         showDocButton.setText("Afficher "+label);
-        showDocButton.setOnClickListener((v -> ((FragmentActivity) EntitieLayout.this.getContext()).getSupportFragmentManager().beginTransaction()
+        showDocButton.setOnClickListener((v -> ((FragmentActivity) EntityLayout.this.getContext()).getSupportFragmentManager().beginTransaction()
                 .addToBackStack(null)
                 .replace(mainLayout, PDFViewerFragment.newInstance(docPDFpath))
                 .commit()));

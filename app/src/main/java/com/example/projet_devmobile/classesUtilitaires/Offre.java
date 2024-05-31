@@ -5,6 +5,14 @@ import com.google.firebase.firestore.DocumentReference;
 import java.util.Date;
 
 public class Offre {
+    public static final String IDEMPLOYEUR = "idemployeur";
+    public static final String METIERCIBLE = "metiercible";
+    public static final String DESCRIPTION = "description";
+    public static final String REMUNERATION = "remuneration";
+    public static final String LATITUDE = "latitude";
+    public static final String LONGITUDE = "longitude";
+    public static final String DATE_DEBUT = "datedebut";
+    public static final String DATE_FIN = "datefin";
     private DocumentReference idemployeur;
     private String metiercible;
     private String description;

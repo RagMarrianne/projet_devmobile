@@ -39,15 +39,12 @@ public class ButtonSetLayout extends LinearLayout {
             this.fontHexacode = fontHexacode;
         }
     }
-    private LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+
+    private final LinearLayout.LayoutParams sectionlayoutParams = new LinearLayout.LayoutParams(
             ConstraintLayout.LayoutParams.MATCH_PARENT,
             ConstraintLayout.LayoutParams.WRAP_CONTENT
     );
-    private LinearLayout.LayoutParams sectionlayoutParams = new LinearLayout.LayoutParams(
-            ConstraintLayout.LayoutParams.MATCH_PARENT,
-            ConstraintLayout.LayoutParams.WRAP_CONTENT
-    );
-    private LinearLayout.LayoutParams buttonlayoutParams = new LinearLayout.LayoutParams(
+    private final LinearLayout.LayoutParams buttonlayoutParams = new LinearLayout.LayoutParams(
             0,
             ConstraintLayout.LayoutParams.WRAP_CONTENT,
             1
@@ -55,6 +52,12 @@ public class ButtonSetLayout extends LinearLayout {
 
     private Map<String, View> buttonMap = new HashMap<>();
 
+    private LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+            ConstraintLayout.LayoutParams.MATCH_PARENT,
+            ConstraintLayout.LayoutParams.WRAP_CONTENT
+    );
+
+    /**This class is used to create a set of aligned buttons**/
     public ButtonSetLayout(Context context, String fontHexaCode) {
         super(context);
 
@@ -73,6 +76,7 @@ public class ButtonSetLayout extends LinearLayout {
         this.setOrientation(LinearLayout.VERTICAL);
     }
 
+    // Create a simple button with text
     private void addTextButton(ButtonParam buttonParam){
         GradientDrawable gradientDrawable = new GradientDrawable();
         gradientDrawable.setShape(GradientDrawable.RECTANGLE);
@@ -88,6 +92,7 @@ public class ButtonSetLayout extends LinearLayout {
         buttonMap.put(buttonParam.label,button);
     }
 
+    // Create a button with an image
     private void addImageButton(ButtonParam buttonParam){
         GradientDrawable gradientDrawable = new GradientDrawable();
         gradientDrawable.setShape(GradientDrawable.RECTANGLE);

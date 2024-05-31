@@ -25,15 +25,14 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 public class ListeOffresFragment extends Fragment {
     private static final String IDENTIFIANT = "identifiant";
+    private String idEmployer;
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private GradientDrawable gradientDrawable = new GradientDrawable();
     private LinearLayout.LayoutParams layoutParam = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
     private LinearLayout.LayoutParams offrelayoutParam = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-
     private LinearLayout listeOffresMenuContent;
 
     public static ListeOffresFragment newInstance(String identifiant) {
-
         Bundle args = new Bundle();
         args.putString(IDENTIFIANT,identifiant);
         ListeOffresFragment fragment = new ListeOffresFragment();
@@ -50,7 +49,11 @@ public class ListeOffresFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        assert getArguments() != null;
+        idEmployer = getArguments().getString(IDENTIFIANT);
+
         listeOffresMenuContent = view.findViewById(R.id.listeEntitiesMenuContent);
+
         initMenuContent();
 
         ButtonSetLayout.ButtonParam back = new ButtonSetLayout.ButtonParam(R.drawable.back,"Back","#FFFFFF", v ->
@@ -66,14 +69,16 @@ public class ListeOffresFragment extends Fragment {
         bs.addView(buttonSetLayout);
     }
 
-    private void addOffreView(String idOffre, Offre offre){
-        LinearLayout offreLayout = new OffreLayout(this.getContext(), offre);
-        offreLayout.setOnClickListener(onClickListener -> requireActivity().getSupportFragmentManager().beginTransaction()
+    private void addOfferView(String idOffer, Offre offre){
+        LinearLayout offerLayout = new OffreLayout(this.getContext(), offre);
+
+        // On click, run a new fragment which will allow the user the modify the offer
+        offerLayout.setOnClickListener(onClickListener -> requireActivity().getSupportFragmentManager().beginTransaction()
                 .addToBackStack(null)
-                .replace(R.id.menuContent, ModifierOffreFragment.newInstance(getArguments().getString(IDENTIFIANT),idOffre))
+                .replace(R.id.menuContent, ModifierOffreFragment.newInstance(idEmployer,idOffer))
                 .commit());
 
-        listeOffresMenuContent.addView(offreLayout);
+        listeOffresMenuContent.addView(offerLayout);
     }
 
     private void initMenuContent(){
@@ -84,15 +89,16 @@ public class ListeOffresFragment extends Fragment {
         gradientDrawable.setCornerRadius(30);
         gradientDrawable.setColor(Color.parseColor("#EFE7E7"));
 
-        DocumentReference idemployeur = db.collection("employeurs").document(getArguments().getString(IDENTIFIANT));
+        DocumentReference docRefEmployer = db.collection("employeurs").document(idEmployer);
 
-        db.collection("offres").whereEqualTo("idemployeur",idemployeur)
+        // Collect all the offer which was submit by the employer
+        db.collection("offres").whereEqualTo("idemployeur",docRefEmployer)
                 .get().addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             Offre offre = document.toObject(Offre.class);
                             String idOffre = document.getId();
-                            addOffreView(idOffre,offre);
+                            addOfferView(idOffre,offre); // For each offer, add an OfferLayout
                             Log.d(TAG, "Un document récupéré");
                         }
                         Log.d(TAG, "Documents récupérés");

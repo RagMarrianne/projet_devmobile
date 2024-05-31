@@ -46,13 +46,13 @@ public class NouvelleOffreFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        String employeurPseudo = requireArguments().getString(PSEUDO);
+        String employerPseudo = requireArguments().getString(PSEUDO);
 
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
-        FormLayout offreForm = new FormLayout(this.requireContext());
-        offreForm.setLayoutParams(layoutParams);
-        offreForm.addTextSection(new LinkedHashMap<String, Class<?>>() {{
+        FormLayout offerForm = new FormLayout(this.requireContext());
+        offerForm.setLayoutParams(layoutParams);
+        offerForm.addTextSection(new LinkedHashMap<String, Class<?>>() {{
             put("metiercible", String.class);
             put("datedebut", Date.class);
             put("datefin", Date.class);
@@ -66,46 +66,33 @@ public class NouvelleOffreFragment extends Fragment {
         ButtonSetLayout buttonSetLayout = new ButtonSetLayout(this.getContext(),"#FFFFFF");
         buttonSetLayout.setLayoutParams(layoutParams2);
 
-        ButtonSetLayout.ButtonParam  deposerOffreBouton = new ButtonSetLayout.ButtonParam("Déposer","#5CE98C", new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Map<String, Object> data = null;
-                try {
-                    data = offreForm.getData();
-                } catch (ParseException e) {
-                    throw new RuntimeException(e);
-                }
-                data.put("idemployeur",db.collection("employeurs").document(employeurPseudo));
+        ButtonSetLayout.ButtonParam  submitOfferButton = new ButtonSetLayout.ButtonParam("Déposer","#5CE98C", v -> {
 
-                db.collection("offres").document()
-                        .set(data)
-                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                                Log.d(TAG, "DocumentSnapshot successfully written!");
-                            }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Log.w(TAG, "Error writing document", e);
-                            }
-                        });
-                requireActivity().getSupportFragmentManager().popBackStack();
+            // We collect all the information written on the form
+            Map<String, Object> data = null;
+            try {
+                data = offerForm.getData();
+            } catch (ParseException e) {
+                throw new RuntimeException(e);
             }
+            // We add the ID of the employer in the data
+            data.put("idemployeur",db.collection("employeurs").document(employerPseudo));
+
+            // Send the data to our database fireStore and end the fragment
+            db.collection("offres").document()
+                    .set(data)
+                    .addOnSuccessListener(aVoid -> Log.d(TAG, "DocumentSnapshot successfully written!"))
+                    .addOnFailureListener(e -> Log.w(TAG, "Error writing document", e));
+            requireActivity().getSupportFragmentManager().popBackStack();
         });
 
-        ButtonSetLayout.ButtonParam back = new ButtonSetLayout.ButtonParam(R.drawable.back,"Back","#FFFFFF", new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                requireActivity().getSupportFragmentManager().popBackStack();
-            }
-        });
-        buttonSetLayout.addButtonsSection(new ButtonSetLayout.ButtonParam[]{back,deposerOffreBouton});
+        ButtonSetLayout.ButtonParam back = new ButtonSetLayout.ButtonParam(R.drawable.back,"Back","#FFFFFF", v ->
+                requireActivity().getSupportFragmentManager().popBackStack());
+        buttonSetLayout.addButtonsSection(new ButtonSetLayout.ButtonParam[]{back,submitOfferButton});
 
-        LinearLayout offreInfo = view.findViewById(R.id.entitieInfo);
-        offreInfo.addView(offreForm);
-        offreInfo.addView(buttonSetLayout);
+        LinearLayout offerInfo = view.findViewById(R.id.entitieInfo);
+        offerInfo.addView(offerForm);
+        offerInfo.addView(buttonSetLayout);
 
     }
 }

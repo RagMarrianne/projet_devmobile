@@ -1,24 +1,19 @@
 package com.example.projet_devmobile.fragment.employeur;
 
 import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
-import static androidx.core.content.ContextCompat.startActivity;
 
-import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
-import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
 
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.Toast;
 
 import com.example.projet_devmobile.R;
 import com.example.projet_devmobile.classesUtilitaires.Candidature;
@@ -29,9 +24,11 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 
-public class ListeCandidatureFragment extends Fragment {
-    private static final String STATUS = "status";
+public class ListeCandidatureEFragment extends Fragment {
+    private static final String ETAT = "etat";
     private static final String IDENTIFIANT = "identifiant";
+    private String idEmployer;
+    private String etat;
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private GradientDrawable gradientDrawable = new GradientDrawable();
     private LinearLayout.LayoutParams layoutParam = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -39,11 +36,11 @@ public class ListeCandidatureFragment extends Fragment {
 
     private LinearLayout listeCandidaturesMenuContent;
 
-    public static ListeCandidatureFragment newInstance(String status, String identifiant) {
+    public static ListeCandidatureEFragment newInstance(String state, String idEmployer) {
         Bundle args = new Bundle();
-        ListeCandidatureFragment fragment = new ListeCandidatureFragment();
-        args.putString(STATUS, status);
-        args.putString(IDENTIFIANT,identifiant);
+        ListeCandidatureEFragment fragment = new ListeCandidatureEFragment();
+        args.putString(ETAT, state);
+        args.putString(IDENTIFIANT,idEmployer);
         fragment.setArguments(args);
         return fragment;
     }
@@ -56,8 +53,12 @@ public class ListeCandidatureFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        assert getArguments() != null;
+        idEmployer = getArguments().getString(IDENTIFIANT);
+        etat = getArguments().getString(ETAT);
 
         listeCandidaturesMenuContent = view.findViewById(R.id.listeEntitiesMenuContent);
+
         initMenuContent();
 
         ButtonSetLayout.ButtonParam back = new ButtonSetLayout.ButtonParam(R.drawable.back,"Back","#FFFFFF", v ->
@@ -74,13 +75,22 @@ public class ListeCandidatureFragment extends Fragment {
     }
 
     private void addCandidatureView(String idCandidature, Candidature candidature){
-        LinearLayout candidatureLayout = new CandidatureLayout(this.getContext(), candidature, getArguments().getString(STATUS).equals(Candidature.ACCEPTE));
-        candidatureLayout.setOnClickListener(onClickListener -> requireActivity()
-                .getSupportFragmentManager()
-                .beginTransaction()
-                .addToBackStack(null)
-                .replace(R.id.menuContent, AffichageCandidatureFragment.newInstance(idCandidature))
-                .commit());
+        LinearLayout candidatureLayout = null;
+
+        // If the candidature is already accepted, we add contacting options
+        if (etat.equals(Candidature.TRAITEE)){
+            candidatureLayout = new CandidatureLayout(this.getContext(), candidature, idCandidature, CandidatureLayout.CONTACTER);
+        }
+        // if not, it means that it still have to be validate. So on click, run a new fragment which will allow the user to do it
+        else {
+            candidatureLayout = new CandidatureLayout(this.getContext(), candidature, idCandidature, CandidatureLayout.NO_OPTION);
+            candidatureLayout.setOnClickListener(onClickListener -> requireActivity()
+                    .getSupportFragmentManager()
+                    .beginTransaction()
+                    .addToBackStack(null)
+                    .replace(R.id.menuContent, AffichageCandidatureFragment.newInstance(idCandidature))
+                    .commit());
+        }
         listeCandidaturesMenuContent.addView(candidatureLayout);
     }
 
@@ -92,11 +102,12 @@ public class ListeCandidatureFragment extends Fragment {
         gradientDrawable.setCornerRadius(30);
         gradientDrawable.setColor(Color.parseColor("#EFE7E7"));
 
-        DocumentReference idemployeur = db.collection("employeurs").document(getArguments().getString(IDENTIFIANT));
+        DocumentReference idemployeur = db.collection("employeurs").document(idEmployer);
 
+        // Collect all the candidature received according to the status searched (ongoing,accepted)
         db.collection("candidatures")
                 .whereEqualTo("idemployeur",idemployeur)
-                .whereEqualTo("status",getArguments().getString(STATUS))
+                .whereEqualTo("etat",etat)
                 .get().addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         for (QueryDocumentSnapshot document : task.getResult()) {

@@ -29,6 +29,8 @@ public class ModifierOffreFragment extends Fragment {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private static final String ID_OFFRE = "idOffre";
     private static final String PSEUDO_EMPLOYEUR = "pseudo_employeur";
+    private String idOffer;
+    private String idEmployer;
 
     public static ModifierOffreFragment newInstance(String pseudo_employeur, String idOffre) {
         ModifierOffreFragment fragment = new ModifierOffreFragment();
@@ -43,7 +45,12 @@ public class ModifierOffreFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        db.collection("offres").document(getArguments().getString(ID_OFFRE))
+        assert getArguments() != null;
+        idOffer = getArguments().getString(ID_OFFRE);
+        idEmployer = getArguments().getString(PSEUDO_EMPLOYEUR);
+
+        // Get the offer from our database and when the document is received, init the form
+        db.collection("offres").document(idOffer)
                 .get().addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         DocumentSnapshot document = task.getResult();
@@ -70,6 +77,7 @@ public class ModifierOffreFragment extends Fragment {
 
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
+        // Init the form
         FormLayout offreForm = new FormLayout(this.requireContext());
         offreForm.setLayoutParams(layoutParams);
         offreForm.addTextSection(new LinkedHashMap<String, Class<?>>() {{
@@ -82,6 +90,7 @@ public class ModifierOffreFragment extends Fragment {
             put("description", String.class);
         }});
 
+        // Pre-complete the form with the old values of the offer
         offreForm.putValuesToEditAreas(new HashMap<String,Object>(){{
             put("metiercible", offre.getMetiercible());
             put("datedebut", offre.getDatedebut());
@@ -98,26 +107,29 @@ public class ModifierOffreFragment extends Fragment {
         buttonSetLayout.setLayoutParams(layoutParams2);
 
         ButtonSetLayout.ButtonParam  modifierOffreBouton = new ButtonSetLayout.ButtonParam("Modifier","#5CE98C", v -> {
+            // Collect the data written on the form
             Map<String, Object> data = null;
             try {
                 data = offreForm.getData();
             } catch (ParseException e) {
                 throw new RuntimeException(e);
             }
-            data.put("idemployeur",db.collection("employeurs").document(getArguments().getString(PSEUDO_EMPLOYEUR)));
+            data.put("idemployeur",db.collection("employeurs").document(idEmployer));
 
-            db.collection("offres").document(getArguments().getString(ID_OFFRE))
+            // Send it to the database
+            db.collection("offres").document(idOffer)
                     .update(data)
-                    .addOnSuccessListener(aVoid -> Log.d(TAG, "DocumentSnapshot successfully written!"))
-                    .addOnFailureListener(e -> Log.w(TAG, "Error writing document", e));
+                    .addOnSuccessListener(aVoid -> Log.d(TAG, "DocumentSnapshot successfully modify!"))
+                    .addOnFailureListener(e -> Log.w(TAG, "Error modification document", e));
             requireActivity().getSupportFragmentManager().popBackStack();
 
         });
 
-        ButtonSetLayout.ButtonParam  supprimerOffreBouton = new ButtonSetLayout.ButtonParam("Supprimer","#FF0000", v -> {
-            db.collection("offres").document(getArguments().getString(ID_OFFRE)).delete()
-                    .addOnSuccessListener(aVoid -> Log.d(TAG, "DocumentSnapshot successfully written!"))
-                    .addOnFailureListener(e -> Log.w(TAG, "Error writing document", e));
+        ButtonSetLayout.ButtonParam  deleteOfferBouton = new ButtonSetLayout.ButtonParam("Supprimer","#FF0000", v -> {
+            // Delete the offer
+            db.collection("offres").document(idOffer).delete()
+                    .addOnSuccessListener(aVoid -> Log.d(TAG, "DocumentSnapshot successfully deleted!"))
+                    .addOnFailureListener(e -> Log.w(TAG, "Error document not deleted", e));
             requireActivity().getSupportFragmentManager().popBackStack();
         });
 
@@ -127,7 +139,7 @@ public class ModifierOffreFragment extends Fragment {
                 requireActivity().getSupportFragmentManager().popBackStack();
             }
         });
-        buttonSetLayout.addButtonsSection(new ButtonSetLayout.ButtonParam[]{back,supprimerOffreBouton,modifierOffreBouton});
+        buttonSetLayout.addButtonsSection(new ButtonSetLayout.ButtonParam[]{back,deleteOfferBouton,modifierOffreBouton});
 
         infoOffre.addView(offreForm);
         infoOffre.addView(buttonSetLayout);

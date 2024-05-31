@@ -5,8 +5,11 @@ import com.google.firebase.firestore.DocumentReference;
 public class Candidature {
 
     public static String EN_COURS = "en cours";
+    public static String TRAITEE = "traitee";
     public static String REFUS = "non acceptee";
     public static String ACCEPTE = "acceptee";
+    public static String VALIDE = "valide";
+    public static String ANNULE = "annule";
     private DocumentReference idcandidat;
     private DocumentReference idemployeur;
     private DocumentReference idoffre;
@@ -18,12 +21,13 @@ public class Candidature {
     private String ville;
     private String cv;
     private String lettredemotivation;
-    private double numero;
+    private Integer numero;
     private String status;
+    private String etat;
 
     public Candidature(){}
 
-    public Candidature(DocumentReference idcandidat, DocumentReference idemployeur, DocumentReference idoffre, String nom, String prenom, int age, String email, String nationalite, String ville, String cv, String lettredemotivation, double numero, String status) {
+    public Candidature(DocumentReference idcandidat, DocumentReference idemployeur, DocumentReference idoffre, String nom, String prenom, int age, String email, String nationalite, String ville, String cv, String lettredemotivation, Integer numero, String status, String etat) {
         this.idcandidat = idcandidat;
         this.idemployeur = idemployeur;
         this.idoffre = idoffre;
@@ -37,18 +41,15 @@ public class Candidature {
         this.lettredemotivation = lettredemotivation;
         this.numero = numero;
         this.status = status;
+        this.etat = etat;
     }
 
-    public static String getEnCours() {
-        return EN_COURS;
+    public String getEtat() {
+        return etat;
     }
 
-    public static String getREFUS() {
-        return REFUS;
-    }
-
-    public static String getACCEPTE() {
-        return ACCEPTE;
+    public void setEtat(String etat) {
+        this.etat = etat;
     }
 
     public DocumentReference getIdcandidat() {
@@ -95,7 +96,7 @@ public class Candidature {
         return lettredemotivation;
     }
 
-    public double getNumero() {
+    public Integer getNumero() {
         return numero;
     }
 

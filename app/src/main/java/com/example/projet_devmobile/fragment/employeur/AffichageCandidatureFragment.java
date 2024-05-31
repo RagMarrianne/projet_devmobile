@@ -17,15 +17,11 @@ import android.widget.Toast;
 
 import com.example.projet_devmobile.R;
 import com.example.projet_devmobile.classesUtilitaires.Candidature;
-import com.example.projet_devmobile.classesUtilitaires.Offre;
 import com.example.projet_devmobile.layouts_utilitaires.ButtonSetLayout;
-import com.example.projet_devmobile.layouts_utilitaires.EntitieLayout;
-import com.example.projet_devmobile.layouts_utilitaires.FormLayout;
+import com.example.projet_devmobile.layouts_utilitaires.EntityLayout;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.text.ParseException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -49,18 +45,21 @@ public class AffichageCandidatureFragment extends Fragment {
         if (getArguments() != null) {
             idCandidature = getArguments().getString(CANDIDATURE);
         }
+
+        // get the candidature on our fireStore database by searching it with her ID
         db.collection(CANDIDATURE).document(idCandidature)
                 .get().addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         DocumentSnapshot document = task.getResult();
                         if (document.exists()) {
                             Candidature candidature = document.toObject(Candidature.class);
-                            initLayout(candidature);
+                            assert candidature != null;
+                            initLayout(candidature); // Once get it, init the layout
                         } else {
-                            Log.d(TAG,"OFFRE non éxistante");
+                            Log.d(TAG,"Candidature non éxistante");
                         }
                     } else {
-                        Log.d(TAG,"IMPOSSIBLE DE RÉCUPÉRER L'OFFRE");
+                        Log.d(TAG,"IMPOSSIBLE DE RÉCUPÉRER LA CANDIDATURE");
                     }
                 });
     }
@@ -72,11 +71,11 @@ public class AffichageCandidatureFragment extends Fragment {
     }
 
     private void initLayout(Candidature candidature){
-        LinearLayout infoOffre = requireView().findViewById(R.id.entitieInfo);
+        LinearLayout infoCandidature = requireView().findViewById(R.id.entitieInfo);
 
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
-        EntitieLayout candidatureLayout = new EntitieLayout(this.getContext());
+        EntityLayout candidatureLayout = new EntityLayout(this.getContext());
         candidatureLayout.setLayoutParams(layoutParams);
         candidatureLayout.addTextSection(new LinkedHashMap<String,Object>(){{
             put("Nom",candidature.getNom());
@@ -84,21 +83,24 @@ public class AffichageCandidatureFragment extends Fragment {
             put("Âge",candidature.getAge());
             put("Nationalité",candidature.getNationalite());
             put("Ville",candidature.getVille());
-            put("Email",candidature.getEmail());
         }
         });
+
         candidatureLayout.addPDFSection("CV",candidature.getCv(),R.id.mainMenu);
         candidatureLayout.addPDFSection("Lettre de motivation",candidature.getLettredemotivation(),R.id.mainMenu);
 
-        LinearLayout.LayoutParams layoutParams2 = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams buttonLayoutParam = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
         ButtonSetLayout buttonSetLayout = new ButtonSetLayout(this.getContext(),"#FFFFFF");
-        buttonSetLayout.setLayoutParams(layoutParams2);
+        buttonSetLayout.setLayoutParams(buttonLayoutParam);
 
-        ButtonSetLayout.ButtonParam  accepterCandidatureBouton = new ButtonSetLayout.ButtonParam("Accepter","#5CE98C", v -> {
-
+        ButtonSetLayout.ButtonParam  acceptCandidatureButton = new ButtonSetLayout.ButtonParam("Accepter","#5CE98C", v -> {
+            Map<String,Object> newData = new HashMap<String,Object>(){{
+                put("status",Candidature.ACCEPTE);
+                put("etat",Candidature.TRAITEE);
+            }};
             db.collection("candidatures").document(this.idCandidature)
-                    .update("status",Candidature.ACCEPTE)
+                    .update(newData)
                     .addOnSuccessListener(aVoid -> Log.d(TAG, "DocumentSnapshot successfully written!"))
                     .addOnFailureListener(e -> Log.w(TAG, "Error writing document", e));
             requireActivity().getSupportFragmentManager().popBackStack();
@@ -106,15 +108,20 @@ public class AffichageCandidatureFragment extends Fragment {
         });
 
         ButtonSetLayout.ButtonParam  refuserCandidatureBouton = new ButtonSetLayout.ButtonParam("Refuser","#FF0000", v -> {
+            Map<String,Object> newData = new HashMap<String,Object>(){{
+                put("status",Candidature.REFUS);
+                put("etat",Candidature.TRAITEE);
+            }};
             db.collection("candidatures").document(this.idCandidature)
-                    .update("status",Candidature.REFUS)
+                    .update(newData)
                     .addOnSuccessListener(aVoid -> Log.d(TAG, "DocumentSnapshot successfully written!"))
                     .addOnFailureListener(e -> Log.w(TAG, "Error writing document", e));
             requireActivity().getSupportFragmentManager().popBackStack();
         });
         ButtonSetLayout.ButtonParam appelerCandidatBouton = new ButtonSetLayout.ButtonParam("Appeler le candidat","#9D8F8F", v -> {
             Intent callIntent = new Intent(Intent.ACTION_DIAL);
-            callIntent.setData(Uri.parse("tel:" + String.valueOf(candidature.getNumero())));
+            String numero = "0"+ candidature.getNumero().toString();
+            callIntent.setData(Uri.parse("tel:" + numero));
             try {
                 this.getContext().startActivity(callIntent);
             } catch (SecurityException e) {
@@ -129,10 +136,10 @@ public class AffichageCandidatureFragment extends Fragment {
                 requireActivity().getSupportFragmentManager().popBackStack();
             }
         });
-        buttonSetLayout.addButtonsSection(new ButtonSetLayout.ButtonParam[]{back,refuserCandidatureBouton,accepterCandidatureBouton});
+        buttonSetLayout.addButtonsSection(new ButtonSetLayout.ButtonParam[]{back,refuserCandidatureBouton,acceptCandidatureButton});
         buttonSetLayout.addButtonsSection(new ButtonSetLayout.ButtonParam[]{appelerCandidatBouton});
 
-        infoOffre.addView(candidatureLayout);
-        infoOffre.addView(buttonSetLayout);
+        infoCandidature.addView(candidatureLayout);
+        infoCandidature.addView(buttonSetLayout);
     }
 }

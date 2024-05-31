@@ -5,20 +5,20 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.LinearLayout;
 
 import com.example.projet_devmobile.R;
-import com.example.projet_devmobile.fragment.general.SignInFragment;
-import com.example.projet_devmobile.fragment.general.LogInFragment;
+import com.example.projet_devmobile.fragment.commun.SignInFragment;
+import com.example.projet_devmobile.fragment.commun.LogInFragment;
 import com.example.projet_devmobile.layouts_utilitaires.ButtonSetLayout;
 
 public class ReceptionActivity extends AppCompatActivity {
 
     private final FragmentManager fragmentManager = getSupportFragmentManager();
-    private static final int SIGN_IN_CANDIDAT = 1;
-    private static final int SIGN_IN_EMPLOYEUR = 2;
+    private static final int SIGN_IN_CANDIDATE = 1;
+    private static final int SIGN_IN_EMPLOYER = 2;
     private static final int LOG_IN = 3;
     private static final int LOG_IN_GUEST = 4;
 
@@ -30,40 +30,19 @@ public class ReceptionActivity extends AppCompatActivity {
         LinearLayout signInLayout = findViewById(R.id.signInSection);
         LinearLayout logInLayout = findViewById(R.id.logSection);
 
+        // Add Sign In option as Candidate or Employer
         ButtonSetLayout signInSection = new ButtonSetLayout(this,"#FFFFFF");
-        ButtonSetLayout.ButtonParam candidatButton = new ButtonSetLayout.ButtonParam("Candidat","#FFFFFF", new View.OnClickListener() { //TODO
-            @Override
-            public void onClick(View v) {
-                changerFragment(SIGN_IN_CANDIDAT);
-            }
-        });
-        ButtonSetLayout.ButtonParam employeurButton = new ButtonSetLayout.ButtonParam("Employeur","#FFFFFF", new View.OnClickListener() { //TODO
-            @Override
-            public void onClick(View v) {
-                changerFragment(SIGN_IN_EMPLOYEUR);
-            }
-        });
-        ButtonSetLayout.ButtonParam[] signInButtonSection = {candidatButton,employeurButton};
-        signInSection.addButtonsSection(signInButtonSection);
+        ButtonSetLayout.ButtonParam candidateButton = new ButtonSetLayout.ButtonParam("Candidat","#FFFFFF", v -> changerFragment(SIGN_IN_CANDIDATE));
+        ButtonSetLayout.ButtonParam employerButton = new ButtonSetLayout.ButtonParam("Employeur","#FFFFFF", v -> changerFragment(SIGN_IN_EMPLOYER));
+        signInSection.addButtonsSection(new ButtonSetLayout.ButtonParam[]{candidateButton,employerButton});
         signInLayout.addView(signInSection);
 
-
+        // Add Log In option as Guest or Registered User
         ButtonSetLayout logInSection = new ButtonSetLayout(this,"#5CE98C");
-        ButtonSetLayout.ButtonParam guestButton = new ButtonSetLayout.ButtonParam("Invité","#43B96B", new View.OnClickListener() { //TODO
-            @Override
-            public void onClick(View v) {
-                changerFragment(LOG_IN_GUEST);            }
-        });
-        ButtonSetLayout.ButtonParam logInButton = new ButtonSetLayout.ButtonParam("Log In","#43B96B", new View.OnClickListener() { //TODO
-            @Override
-            public void onClick(View v) {
-                changerFragment(LOG_IN);
-            }
-        });
-        ButtonSetLayout.ButtonParam[] logInButtonSection = {guestButton};
-        ButtonSetLayout.ButtonParam[] logInButtonSection2 = {logInButton};
-        logInSection.addButtonsSection(logInButtonSection);
-        logInSection.addButtonsSection(logInButtonSection2);
+        ButtonSetLayout.ButtonParam guestButton = new ButtonSetLayout.ButtonParam("Invité","#43B96B", v -> changerFragment(LOG_IN_GUEST));
+        ButtonSetLayout.ButtonParam logInButton = new ButtonSetLayout.ButtonParam("Log In","#43B96B", v -> changerFragment(LOG_IN));
+        logInSection.addButtonsSection(new ButtonSetLayout.ButtonParam[]{guestButton});
+        logInSection.addButtonsSection(new ButtonSetLayout.ButtonParam[]{logInButton});
         logInLayout.addView(logInSection);
     }
 
@@ -72,19 +51,21 @@ public class ReceptionActivity extends AppCompatActivity {
         Fragment fragment = null;
 
         switch (numFragment){
-            case SIGN_IN_CANDIDAT:
-                fragment = SignInFragment.newInstance(0);
+            case SIGN_IN_CANDIDATE:
+                fragment = SignInFragment.newInstance(0,false);
                 transaction.replace(R.id.mainLayout, fragment);
                 transaction.commit();
                 break;
 
-            case SIGN_IN_EMPLOYEUR:
-                fragment = SignInFragment.newInstance(1);
+            case SIGN_IN_EMPLOYER:
+                fragment = SignInFragment.newInstance(1,false);
                 transaction.replace(R.id.mainLayout, fragment);
                 transaction.commit();
                 break;
             case LOG_IN_GUEST:
-                //TODO
+                finish();
+                Intent intent = new Intent(this, AnonymousCandidateActivity.class);
+                startActivity(intent);
                 break;
             case LOG_IN:
                 fragment = new LogInFragment();

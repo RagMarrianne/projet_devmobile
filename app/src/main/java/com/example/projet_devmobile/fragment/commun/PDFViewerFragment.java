@@ -1,4 +1,4 @@
-package com.example.projet_devmobile.fragment.general;
+package com.example.projet_devmobile.fragment.commun;
 
 import android.os.Bundle;
 
@@ -24,6 +24,7 @@ import com.google.firebase.storage.StorageReference;
 import java.io.File;
 import java.io.IOException;
 
+/**A fragment used to display PDF document**/
 public class PDFViewerFragment extends Fragment {
 
     private static final String ARG_FILE_PATH = "file_path";
@@ -52,27 +53,23 @@ public class PDFViewerFragment extends Fragment {
 
             PDFView pdfView = view.findViewById(R.id.pdfView);
 
-            StorageReference cvref = storage.getReference().child(filePath);
+            StorageReference docPDFRef;
+            if (!filePath.equals(""))
+                docPDFRef = storage.getReference().child(filePath);
+            else docPDFRef = storage.getReference().child("Candidat/ERROR/ERROR_File.pdf");
+
             try {
                 File finalFile = File.createTempFile("cvfile", "pdf");
-                cvref.getFile(finalFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                        Log.d("TAG", "File cv telecharge " + finalFile.getName());
-                        pdfView.fromFile(finalFile)
-                                .defaultPage(0)
-                                .enableSwipe(true)
-                                .swipeHorizontal(false)
-                                .enableAnnotationRendering(true)
-                                .scrollHandle(new DefaultScrollHandle(PDFViewerFragment.this.getContext()))
-                                .load();
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception exception) {
-                        Log.d("TAG", "File cv NON telecharge");
-                    }
-                });
+                docPDFRef.getFile(finalFile).addOnSuccessListener(taskSnapshot -> {
+                    Log.d("TAG", "File cv telecharge " + finalFile.getName());
+                    pdfView.fromFile(finalFile)
+                            .defaultPage(0)
+                            .enableSwipe(true)
+                            .swipeHorizontal(false)
+                            .enableAnnotationRendering(true)
+                            .scrollHandle(new DefaultScrollHandle(PDFViewerFragment.this.getContext()))
+                            .load();
+                }).addOnFailureListener(exception -> Log.d("TAG", "File cv NON telecharge"));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
